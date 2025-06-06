@@ -5,7 +5,7 @@ import {useState} from "react";
 const About = () => {
     const [hasCopied,setHasCopied] = useState(false);
     const handleCopy = () => {
-        navigator.clipboard.writeText("laraba.manar@hns-re2sd.dz");
+        navigator.clipboard.writeText("benahmed.ala.eddine@hns-re2sd.dz");
         setHasCopied(true);
         setTimeout(() => {
             setHasCopied(false);
