@@ -1,0 +1,1043 @@
+<script>
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize with animated intro sequence
+        initializeWithAnimation();
+    });
+
+    // Animated initialization sequence
+    function initializeWithAnimation() {
+        const container = document.querySelector('.container');
+        const cards = document.querySelectorAll('.card');
+
+        // Fade in header with delay
+        const header = document.querySelector('header');
+        header.style.opacity = '0';
+        header.style.transform = 'translateY(-20px)';
+        header.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+
+        setTimeout(() => {
+            header.style.opacity = '1';
+            header.style.transform = 'translateY(0)';
+        }, 300);
+
+        // Fade in cards sequentially
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 500 + (index * 200));
+        });
+
+        // Initialize app functionality after animations
+        setTimeout(() => {
+            initializeApp();
+        }, 1000);
+    }
+
+    // Main initialization function
+    function initializeApp() {
+        setupSliders();
+            setupUpdateButton();
+            setupDropdowns();
+            setupRandomizeButton();
+            setupPresetButtons();
+            setupSaveLoadSystem();
+            updateGeneTags(); // Make sure this runs
+            updateCircuit();  // Make sure this runs
+
+        // Add special effects to circuit
+        animateCircuit();
+            document.getElementById('update-circuit').click();
+    }
+
+    // Set up slider functionality
+    function setupSliders() {
+        const sliders = document.querySelectorAll('.slider');
+        sliders.forEach(slider => {
+            // Set custom slider gradient based on value
+            updateSliderGradient(slider);
+
+            const valueDisplay = document.getElementById(slider.id.replace('slider', 'value'));
+            slider.addEventListener('input', () => {
+                // Update displayed value
+                valueDisplay.textContent = slider.value + '%';
+                valueDisplay.style.transition = 'background-color 0.3s ease';
+                valueDisplay.style.backgroundColor = 'rgba(0, 201, 255, 0.4)';
+
+                // Update UI elements
+                updateGeneTags();
+                updateCircuit();
+                updateSliderGradient(slider);
+
+                // Reset value display highlight after delay
+                setTimeout(() => {
+                    valueDisplay.style.backgroundColor = 'rgba(0, 201, 255, 0.2)';
+                }, 500);
+            });
+        });
+    }
+
+    // Create gradient appearance for sliders based on their value
+    function updateSliderGradient(slider) {
+        const value = slider.value;
+        const percentage = (value / slider.max) * 100;
+
+        // Create gradient that shows progress
+        slider.style.background = `linear-gradient(to right,
+            var(--primary) 0%,
+            var(--secondary) ${percentage}%,
+            rgba(255, 255, 255, 0.1) ${percentage}%,
+            rgba(255, 255, 255, 0.1) 100%)`;
+    }
+
+    // Enhanced update button with animation
+    function setupUpdateButton() {
+        const updateButton = document.getElementById('update-circuit');
+
+        updateButton.addEventListener('click', () => {
+            // Visual feedback
+            updateButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            updateButton.disabled = true;
+            updateButton.style.background = 'linear-gradient(45deg, #3498db, #2ecc71)';
+
+            // Simulate processing and add ripple effect
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            updateButton.appendChild(ripple);
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+            ripple.style.width = '100px';
+            ripple.style.height = '100px';
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            ripple.style.transform = 'translate(-50%, -50%) scale(0)';
+            ripple.style.animation = 'ripple 1s linear';
+
+            // Add keyframes for ripple animation if not already in document
+            if (!document.querySelector('#ripple-animation')) {
+                const style = document.createElement('style');
+                style.id = 'ripple-animation';
+                style.textContent = `
+                    @keyframes ripple {
+                        0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                        100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Small delay to show animation
+            setTimeout(() => {
+                // Update visualizations with flash effect
+                const circuitVisual = document.getElementById('circuit-visual');
+                circuitVisual.style.transition = 'all 0.3s ease';
+                circuitVisual.style.boxShadow = '0 0 20px rgba(0, 201, 255, 0.7)';
+
+                updateCircuit();
+                updateGeneTags();
+
+                updateButton.innerHTML = '<i class="fas fa-check"></i> Updated!';
+
+                // Remove flash effect
+                setTimeout(() => {
+                    circuitVisual.style.boxShadow = 'none';
+
+                    // Reset button after delay
+                    setTimeout(() => {
+                        updateButton.innerHTML = '<i class="fas fa-sync-alt"></i> Update Genome Circuit';
+                        updateButton.disabled = false;
+                        updateButton.style.background = 'linear-gradient(45deg, var(--primary), var(--secondary))';
+
+                        // Remove ripple
+                        if (ripple) ripple.remove();
+                    }, 800);
+                }, 300);
+            }, 800);
+        });
+    }
+
+    // Update gene tags based on slider values
+    function updateGeneTags() {
+        const geneTagsContainer = document.getElementById('gene-tags');
+            geneTagsContainer.innerHTML = '';
+
+            const eyeValue = parseInt(document.getElementById('eye-slider').value);
+            const hairValue = parseInt(document.getElementById('hair-slider').value);
+            const memoryValue = parseInt(document.getElementById('memory-slider').value);
+            const focusValue = parseInt(document.getElementById('focus-slider').value);
+        const tags = [
+            { gene: 'OCA2/HERC2', value: eyeValue, color: '#00c9ff' },
+            { gene: 'MC1R', value: hairValue, color: '#ff6b6b' },
+            { gene: 'BDNF', value: memoryValue, color: '#92fe9d' },
+            { gene: 'COMT', value: focusValue, color: '#feac5e' }
+        ];
+
+        tags.forEach(tag => {
+            const tagEl = document.createElement('div');
+            tagEl.className = 'gene-tag';
+tagEl.textContent = `${tag.gene} - ${tag.value}%`;
+            // Make tags more visually distinctive
+            tagEl.style.borderColor = tag.color;
+            tagEl.style.boxShadow = `0 0 5px ${tag.color}40`;
+            tagEl.style.transition = 'all 0.3s ease';
+
+            // Add hover effect
+            tagEl.addEventListener('mouseover', () => {
+                tagEl.style.backgroundColor = `${tag.color}30`;
+                tagEl.style.transform = 'translateY(-2px)';
+            });
+
+            tagEl.addEventListener('mouseout', () => {
+                tagEl.style.backgroundColor = 'rgba(0, 201, 255, 0.1)';
+                tagEl.style.transform = 'translateY(0)';
+            });
+
+            geneTagsContainer.appendChild(tagEl);
+        });
+
+        // Update optimization level with animated transition
+      const optimization = Math.floor((parseInt(eyeValue) + parseInt(hairValue) + parseInt(memoryValue) + parseInt(focusValue)) / 4);
+          const optimizationText = document.querySelector('.card:last-child span:nth-child(2)');
+              optimizationText.textContent = optimization.toFixed(2) + '%';
+        // Animate text change
+        animateCounterValue(optimizationText, parseFloat(optimizationText.textContent), parseFloat(optimization));
+
+        // Update progress bar with smooth animation
+        const progressBar = document.querySelector('.card:last-child div:nth-child(3) div');
+        progressBar.style.transition = 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        progressBar.style.width = optimization + '%';
+    }
+
+    // Animate counter from one value to another
+    function animateCounterValue(element, startValue, endValue) {
+        const duration = 500;
+        const startTime = performance.now();
+
+        function updateCounter(timestamp) {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Use easing function for smoother animation
+            const easedProgress = progress < 0.5
+                ? 2 * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            const currentValue = startValue + (endValue - startValue) * easedProgress;
+            element.textContent = currentValue.toFixed(2) + '%';
+
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                element.textContent = endValue.toFixed(2) + '%';
+            }
+        }
+
+        requestAnimationFrame(updateCounter);
+    }
+
+    // Enhanced circuit visualization with delivery method and CRISPR type
+    function updateCircuit() {
+        const circuitCode = document.getElementById('circuit-code');
+        const eyeValue = parseInt(document.getElementById('eye-slider').value);
+        const hairValue = parseInt(document.getElementById('hair-slider').value);
+        const memoryValue = parseInt(document.getElementById('memory-slider').value);
+        const focusValue = parseInt(document.getElementById('focus-slider').value);
+
+        // Get selected delivery method and CRISPR type
+        const deliveryMethod = document.querySelector('select:nth-of-type(1)').value;
+        const crisprType = document.querySelector('select:nth-of-type(2)').value;
+
+        // Determine CRISPR efficiency based on type
+        let efficiencyBonus = 0;
+        switch(crisprType) {
+            case 'Cas9 (Standard)':
+                efficiencyBonus = 0;
+                break;
+            case 'Cas12a (Enhanced)':
+                efficiencyBonus = 5;
+                break;
+            case 'Base Editor':
+                efficiencyBonus = 10;
+                break;
+        }
+
+        // Generate circuit based on values
+        let circuit = '';
+
+        // Header with delivery and CRISPR info
+        circuit += '╔═════════════════════════════════════╗\n';
+        circuit += '║  GENOME OPTIMIZATION CIRCUIT v1.0   ║\n';
+        circuit += `║  ${deliveryMethod.padEnd(18)} | ${crisprType.padEnd(12)} ║\n`;
+        circuit += '╚═════════════════════════════════════╝\n\n';
+
+        // Appearance module
+        circuit += '┌─────────[APPEARANCE MODULE]─────────┐\n';
+        circuit += `│ OCA2/HERC2 ──┬────────────${'─'.repeat(Math.floor(eyeValue/10))}⊙ ${eyeValue}%\n`;
+        circuit += `│ MC1R ────────┘        ${'│'.repeat(Math.floor(hairValue/25))}\n`;
+        circuit += `│                       ${'│'.repeat(Math.floor(hairValue/25))}⊙ ${hairValue}%\n`;
+
+        // Cognitive module
+        circuit += '└───────────────────────┬─────────────┘\n';
+        circuit += '                        │\n';
+        circuit += '┌─────────[COGNITIVE MODULE]──────────┐\n';
+        circuit += `│ BDNF ─────────────────${'─'.repeat(Math.floor(memoryValue/10))}⊙ ${memoryValue}%\n`;
+        circuit += `│ COMT ─────────────────${'─'.repeat(Math.floor(focusValue/10))}⊙ ${focusValue}%\n`;
+        circuit += '└───────────────────────┬─────────────┘\n';
+        circuit += '                        │\n';
+
+        // Processing unit showing crispr type effect
+        circuit += '┌─────────[PROCESSING UNIT]───────────┐\n';
+
+        // Calculate average with bonus
+        const avgValue = (eyeValue + hairValue + memoryValue + focusValue)/4 + efficiencyBonus;
+        const clampedAvg = Math.min(avgValue, 100); // Don't exceed 100%
+
+        let optimizationChar = '░';
+        if (clampedAvg > 60) optimizationChar = '▒';
+        if (clampedAvg > 80) optimizationChar = '█';
+
+        circuit += `│ ${optimizationChar.repeat(Math.floor(clampedAvg/5))} │\n`;
+        circuit += `│ Efficiency: ${clampedAvg.toFixed(1)}% (${efficiencyBonus > 0 ? '+' + efficiencyBonus + '% bonus' : 'No bonus'}) │\n`;
+        circuit += '└───────────────────────────────────┘\n';
+
+        circuitCode.textContent = circuit;
+    }
+
+    // Set up dropdown interactions
+    function setupDropdowns() {
+        const dropdowns = document.querySelectorAll('select');
+        dropdowns.forEach(dropdown => {
+            // Add custom styling to dropdowns
+            dropdown.style.transition = 'all 0.3s ease';
+
+            dropdown.addEventListener('change', () => {
+                // Visual feedback on change
+                dropdown.style.boxShadow = '0 0 10px var(--primary)';
+                setTimeout(() => {
+                    dropdown.style.boxShadow = 'none';
+                }, 500);
+
+                updateCircuit();
+
+                // Show status message
+                const statusMessage = document.querySelector('.card:last-child div:last-child');
+                statusMessage.textContent = `${dropdown.value} selected. Circuit updated with new parameters.`;
+                statusMessage.style.color = '#92fe9d';
+                statusMessage.style.transition = 'all 0.3s ease';
+
+                // Reset message after delay
+                setTimeout(() => {
+                    statusMessage.textContent = 'Your genome design is ready for simulation. Update parameters to see changes in the circuit visualization.';
+                    statusMessage.style.color = '#aaa';
+                }, 2000);
+            });
+        });
+    }
+
+    // Add randomize button to interface - NEW FEATURE
+    function setupRandomizeButton() {
+        // Create randomize button if it doesn't exist
+        if (!document.getElementById('randomize-button')) {
+            const updateButton = document.getElementById('update-circuit');
+
+            const randomizeButton = document.createElement('button');
+            randomizeButton.id = 'randomize-button';
+            randomizeButton.className = 'button';
+            randomizeButton.innerHTML = '<i class="fas fa-random"></i> Randomize Traits';
+            randomizeButton.style.background = 'linear-gradient(45deg, #9b59b6, #3498db)';
+            randomizeButton.style.marginTop = '10px';
+
+            // Insert after update button
+            updateButton.parentNode.insertBefore(randomizeButton, updateButton.nextSibling);
+
+            // Add click event
+            randomizeButton.addEventListener('click', () => {
+                // Visual feedback
+                randomizeButton.innerHTML = '<i class="fas fa-dice"></i> Randomizing...';
+                randomizeButton.disabled = true;
+
+                // Create flash effect
+                document.querySelectorAll('.slider').forEach(slider => {
+                    slider.style.transition = 'all 0.3s ease';
+                    slider.style.boxShadow = '0 0 10px rgba(146, 254, 157, 0.7)';
+                });
+
+                // Randomize values with a delay to show animation
+                setTimeout(() => {
+                    // Randomize each slider with an animated sequence
+                    const sliders = document.querySelectorAll('.slider');
+
+                    let delay = 0;
+                    sliders.forEach(slider => {
+                        setTimeout(() => {
+                            const randomValue = Math.floor(Math.random() * 101); // 0-100
+                            slider.value = randomValue;
+
+                            // Update displayed value
+                            const valueDisplay = document.getElementById(slider.id.replace('slider', 'value'));
+                            valueDisplay.textContent = randomValue + '%';
+                            valueDisplay.style.backgroundColor = 'rgba(146, 254, 157, 0.4)';
+
+                            // Update slider gradient
+                            updateSliderGradient(slider);
+
+                            // Reset highlighting
+                            setTimeout(() => {
+                                valueDisplay.style.backgroundColor = 'rgba(0, 201, 255, 0.2)';
+                                slider.style.boxShadow = 'none';
+                            }, 500);
+                        }, delay);
+                        delay += 200; // Stagger the animations
+                    });
+
+                    // Update UI after all sliders are randomized
+                    setTimeout(() => {
+                        updateGeneTags();
+                        updateCircuit();
+
+                        // Reset button
+                        randomizeButton.innerHTML = '<i class="fas fa-random"></i> Randomize Traits';
+                        randomizeButton.disabled = false;
+                    }, delay + 300);
+                }, 400);
+            });
+        }
+    }
+
+    // Add preset buttons for quick configuration - NEW FEATURE
+    function setupPresetButtons() {
+        // Create presets container if it doesn't exist
+        if (!document.getElementById('presets-container')) {
+            const firstCard = document.querySelector('.card');
+
+            // Create section title for presets
+            const presetsTitle = document.createElement('h3');
+            presetsTitle.className = 'section-title';
+            presetsTitle.innerHTML = '⚡ Quick Presets';
+
+            // Create container for preset buttons
+            const presetsContainer = document.createElement('div');
+            presetsContainer.id = 'presets-container';
+            presetsContainer.style.display = 'flex';
+            presetsContainer.style.gap = '10px';
+            presetsContainer.style.flexWrap = 'wrap';
+            presetsContainer.style.marginBottom = '15px';
+
+            // Define presets
+            const presets = [
+                { name: 'Balanced', eye: 50, hair: 50, memory: 50, focus: 50, color: '#3498db' },
+                { name: 'Cognitive', eye: 30, hair: 20, memory: 90, focus: 85, color: '#9b59b6' },
+                { name: 'Visual', eye: 85, hair: 90, memory: 30, focus: 20, color: '#e74c3c' }
+            ];
+
+            // Create preset buttons
+            presets.forEach(preset => {
+                const presetButton = document.createElement('button');
+                presetButton.className = 'preset-button';
+                presetButton.textContent = preset.name;
+                presetButton.style.flex = '1';
+                presetButton.style.padding = '8px';
+                presetButton.style.borderRadius = '5px';
+                presetButton.style.border = 'none';
+presetButton.style.background = `linear-gradient(45deg, ${preset.color}, ${preset.color}aa)`;                presetButton.style.color = 'white';
+                presetButton.style.fontWeight = 'bold';
+                presetButton.style.cursor = 'pointer';
+                presetButton.style.transition = 'all 0.3s ease';
+
+                // Add hover effects
+                presetButton.addEventListener('mouseover', () => {
+                    presetButton.style.transform = 'translateY(-2px)';
+                    presetButton.style.boxShadow = `0 4px 8px ${preset.color}80`;
+                });
+
+                presetButton.addEventListener('mouseout', () => {
+                    presetButton.style.transform = 'translateY(0)';
+                    presetButton.style.boxShadow = 'none';
+                });
+
+                // Add click event to apply preset
+                presetButton.addEventListener('click', () => {
+                    // Apply values with animation
+                    document.getElementById('eye-slider').value = preset.eye;
+                    document.getElementById('eye-value').textContent = preset.eye + '%';
+
+                    document.getElementById('hair-slider').value = preset.hair;
+                    document.getElementById('hair-value').textContent = preset.hair + '%';
+
+                    document.getElementById('memory-slider').value = preset.memory;
+                    document.getElementById('memory-value').textContent = preset.memory + '%';
+
+                    document.getElementById('focus-slider').value = preset.focus;
+                    document.getElementById('focus-value').textContent = preset.focus + '%';
+
+                    // Update UI elements
+                    document.querySelectorAll('.slider').forEach(slider => {
+                        updateSliderGradient(slider);
+                    });
+
+                    updateGeneTags();
+                    updateCircuit();
+
+                    // Visual feedback
+                    presetButton.style.transform = 'scale(0.95)';
+                    presetButton.style.boxShadow = `0 0 15px ${preset.color}`;
+
+                    // Reset button after animation
+                    setTimeout(() => {
+                        presetButton.style.transform = 'scale(1)';
+                        presetButton.style.boxShadow = 'none';
+                    }, 300);
+
+                    // Update status message
+                    const statusMessage = document.querySelector('.card:last-child div:last-child');
+                    statusMessage.textContent = `${preset.name} preset applied. Genome configuration updated.`;
+                    statusMessage.style.color = preset.color;
+
+                    // Reset message after delay
+                    setTimeout(() => {
+                        statusMessage.textContent = 'Your genome design is ready for simulation. Update parameters to see changes in the circuit visualization.';
+                        statusMessage.style.color = '#aaa';
+                    }, 2000);
+                });
+
+                presetsContainer.appendChild(presetButton);
+            });
+
+            // Add elements to the DOM
+            firstCard.insertBefore(presetsTitle, document.querySelector('.section-title'));
+            firstCard.insertBefore(presetsContainer, presetsTitle.nextSibling);
+        }
+    }
+
+    // Add save/load functionality - NEW FEATURE
+    function setupSaveLoadSystem() {
+        if (!document.getElementById('save-button')) {
+            const lastCard = document.querySelector('.card:last-child');
+
+            // Create buttons container
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.gap = '10px';
+            buttonsContainer.style.marginTop = '15px';
+
+            // Create save button
+            const saveButton = document.createElement('button');
+            saveButton.id = 'save-button';
+            saveButton.className = 'button';
+            saveButton.innerHTML = '<i class="fas fa-save"></i> Save Configuration';
+            saveButton.style.background = 'linear-gradient(45deg, #2980b9, #27ae60)';
+            saveButton.style.flex = '1';
+
+            // Create load button
+            const loadButton = document.createElement('button');
+            loadButton.id = 'load-button';
+            loadButton.className = 'button';
+            loadButton.innerHTML = '<i class="fas fa-upload"></i> Load Configuration';
+            loadButton.style.background = 'linear-gradient(45deg, #f39c12, #d35400)';
+            loadButton.style.flex = '1';
+
+            // Add to container
+            buttonsContainer.appendChild(saveButton);
+            buttonsContainer.appendChild(loadButton);
+
+            // Add to card
+            lastCard.appendChild(buttonsContainer);
+
+            // Add save button functionality
+            saveButton.addEventListener('click', () => {
+                // Collect current configuration
+                const config = {
+                    eye: document.getElementById('eye-slider').value,
+                    hair: document.getElementById('hair-slider').value,
+                    memory: document.getElementById('memory-slider').value,
+                    focus: document.getElementById('focus-slider').value,
+                    delivery: document.querySelector('select:nth-of-type(1)').value,
+                    crispr: document.querySelector('select:nth-of-type(2)').value,
+                    timestamp: new Date().toLocaleString()
+                };
+
+                // Convert to string and save to localStorage
+                localStorage.setItem('traitDesignerConfig', JSON.stringify(config));
+
+                // Visual feedback
+                saveButton.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                saveButton.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
+
+                // Create quick flash animation
+                saveButton.animate([
+                    { boxShadow: '0 0 20px rgba(39, 174, 96, 0.8)' },
+                    { boxShadow: '0 0 0 rgba(39, 174, 96, 0)' }
+                ], {
+                    duration: 1000,
+                    easing: 'ease-out'
+                });
+
+                // Reset button after animation
+                setTimeout(() => {
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save Configuration';
+                    saveButton.style.background = 'linear-gradient(45deg, #2980b9, #27ae60)';
+                }, 2000);
+
+                // Update status message
+                const statusMessage = document.querySelector('.card:last-child div:nth-child(4)');
+                statusMessage.textContent = `Configuration saved at ${config.timestamp}`;
+                statusMessage.style.color = '#2ecc71';
+
+                // Reset message after delay
+                setTimeout(() => {
+                    statusMessage.textContent = 'Your genome design is ready for simulation. Update parameters to see changes in the circuit visualization.';
+                    statusMessage.style.color = '#aaa';
+                }, 3000);
+            });
+
+            // Add load button functionality
+            loadButton.addEventListener('click', () => {
+                // Try to load from localStorage
+                const savedConfig = localStorage.getItem('traitDesignerConfig');
+
+                if (savedConfig) {
+                    const config = JSON.parse(savedConfig);
+
+                    // Visual feedback
+                    loadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+                    // Apply saved configuration with delay for animation
+                    setTimeout(() => {
+                        // Set slider values
+                        document.getElementById('eye-slider').value = config.eye;
+                        document.getElementById('eye-value').textContent = config.eye + '%';
+
+                        document.getElementById('hair-slider').value = config.hair;
+                        document.getElementById('hair-value').textContent = config.hair + '%';
+
+                        document.getElementById('memory-slider').value = config.memory;
+                        document.getElementById('memory-value').textContent = config.memory + '%';
+
+                        document.getElementById('focus-slider').value = config.focus;
+                        document.getElementById('focus-value').textContent = config.focus + '%';
+
+                        // Set dropdowns if values exist
+                        if (config.delivery) {
+                            document.querySelector('select:nth-of-type(1)').value = config.delivery;
+                        }
+
+                        if (config.crispr) {
+                            document.querySelector('select:nth-of-type(2)').value = config.crispr;
+                        }
+
+                        // Update all visuals
+                        document.querySelectorAll('.slider').forEach(slider => {
+                            updateSliderGradient(slider);
+                        });
+
+                        updateGeneTags();
+                        updateCircuit();
+
+                        // Success message
+                        loadButton.innerHTML = '<i class="fas fa-check"></i> Loaded!';
+                        loadButton.style.background = 'linear-gradient(45deg, #f39c12, #e67e22)';
+
+                        // Reset button after animation
+                        setTimeout(() => {
+                            loadButton.innerHTML = '<i class="fas fa-upload"></i> Load Configuration';
+                            loadButton.style.background = 'linear-gradient(45deg, #f39c12, #d35400)';
+                        }, 2000);
+
+                        // Update status with timestamp
+                        const statusMessage = document.querySelector('.card:last-child div:nth-child(4)');
+                        statusMessage.textContent = `Configuration from ${config.timestamp} loaded successfully.`;
+                        statusMessage.style.color = '#e67e22';
+
+                        // Reset message after delay
+                        setTimeout(() => {
+                            statusMessage.textContent = 'Your genome design is ready for simulation. Update parameters to see changes in the circuit visualization.';
+                            statusMessage.style.color = '#aaa';
+                        }, 3000);
+                    }, 800);
+                } else {
+                    // No saved config
+                    loadButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No Saved Data';
+
+                    // Reset button after animation
+                    setTimeout(() => {
+                        loadButton.innerHTML = '<i class="fas fa-upload"></i> Load Configuration';
+                    }, 2000);
+
+                    // Update status
+                    const statusMessage = document.querySelector('.card:last-child div:nth-child(4)');
+                    statusMessage.textContent = 'No saved configuration found.';
+                    statusMessage.style.color = '#e74c3c';
+
+                    // Reset message after delay
+                    setTimeout(() => {
+                        statusMessage.textContent = 'Your genome design is ready for simulation. Update parameters to see changes in the circuit visualization.';
+                        statusMessage.style.color = '#aaa';
+                    }, 3000);
+                }
+            });
+        }
+    }
+
+    // Add subtle animation to circuit visualization - NEW FEATURE
+    function animateCircuit() {
+        // Add a subtle glow animation to the circuit
+        const circuitVisual = document.getElementById('circuit-visual');
+
+        // Create keyframes for the glow animation
+        if (!document.querySelector('#circuit-animation')) {
+            const style = document.createElement('style');
+            style.id = 'circuit-animation';
+            style.textContent = `
+               @keyframes circuitGlow {
+                    0% { box-shadow: 0 0 5px rgba(0, 201, 255, 0.2) inset; }
+                    50% { box-shadow: 0 0 15px rgba(0, 201, 255, 0.4) inset; }
+                    100% { box-shadow: 0 0 5px rgba(0, 201, 255, 0.2) inset; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Apply animation to circuit visual
+        circuitVisual.style.animation = 'circuitGlow 3s infinite ease-in-out';
+
+        // Add subtle pulsing effect to the circuit text characters
+        const circuitCode = document.getElementById('circuit-code');
+        const originalText = circuitCode.textContent;
+
+        // Make certain characters glow periodically
+        setInterval(() => {
+            // Don't update if user is viewing the previous text
+            if (circuitCode.dataset.animating === 'true') return;
+
+            circuitCode.dataset.animating = 'true';
+
+            // Find and highlight random symbols
+            const symbolsToHighlight = ['⊙', '┌', '┐', '└', '┘', '│', '─', '┬', '┴'];
+            let newText = originalText;
+
+            // Replace a random selection of symbols with highlighted versions
+            symbolsToHighlight.forEach(symbol => {
+                // Only highlight some instances (not all) with 30% chance
+                if (Math.random() < 0.3) {
+                    // Create span with glow effect for the symbol
+const highlightedSymbol = `<span style="color: #00c9ff; text-shadow: 0 0 5px #00c9ff;">${symbol}</span>`;
+                    // Replace some instances of the symbol
+                    const instances = [...newText.matchAll(new RegExp(symbol, 'g'))];
+                    if (instances.length > 0) {
+                        // Choose a random instance to highlight
+                        const randomIndex = Math.floor(Math.random() * instances.length);
+                        const position = instances[randomIndex].index;
+
+                        // Replace at the specific position
+                        newText = newText.substring(0, position) +
+                                 highlightedSymbol +
+                                 newText.substring(position + 1);
+                    }
+                }
+            });
+
+            // Display pre-formatted text with highlighted symbols
+circuitCode.innerHTML = `<pre>${newText}</pre>`;
+            // Reset after animation completes
+            setTimeout(() => {
+                circuitCode.innerHTML = originalText;
+                circuitCode.dataset.animating = 'false';
+            }, 2000);
+        }, 5000);
+    }
+
+    // Add 3D perspective effects to cards - NEW FEATURE
+    function add3DEffects() {
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach(card => {
+            // Add perspective and transition properties
+            card.style.transition = 'transform 0.3s ease';
+            card.style.transformStyle = 'preserve-3d';
+
+            // Mouse move event for 3D effect
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                // Calculate mouse position relative to card center
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+
+                // Convert to rotation angle (max 5 degrees)
+                const rotateY = (x / rect.width) * 5;
+                const rotateX = -(y / rect.height) * 5;
+
+                // Apply 3D rotation transform
+               card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+               card.style.boxShadow = `0 10px 30px rgba(0, 0, 0, 0.2), ${rotateY/2}px ${rotateX/2}px 15px rgba(0, 201, 255, 0.2)`;
+
+            });
+
+            // Reset on mouse leave
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                card.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+            });
+        });
+    }
+
+    // Add interactive graph visualization - NEW FEATURE
+    function addGraphVisualization() {
+        // Create graph container if it doesn't exist
+        if (!document.getElementById('genome-graph')) {
+            const lastCard = document.querySelector('.card:last-child');
+
+            // Create section header
+            const graphTitle = document.createElement('h3');
+            graphTitle.className = 'section-title';
+            graphTitle.innerHTML = '📊 Gene Expression Graph';
+            graphTitle.style.marginTop = '20px';
+
+            // Create graph container
+            const graphContainer = document.createElement('div');
+            graphContainer.id = 'genome-graph';
+            graphContainer.style.height = '200px';
+            graphContainer.style.background = 'rgba(0, 0, 0, 0.05)';
+            graphContainer.style.borderRadius = '5px';
+            graphContainer.style.padding = '10px';
+            graphContainer.style.marginTop = '10px';
+            graphContainer.style.position = 'relative';
+            graphContainer.style.overflow = 'hidden';
+
+            // Add canvas for drawing
+            const canvas = document.createElement('canvas');
+            canvas.id = 'graph-canvas';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            graphContainer.appendChild(canvas);
+
+            // Add to DOM
+            lastCard.appendChild(graphTitle);
+            lastCard.appendChild(graphContainer);
+
+            // Initialize and draw graph
+            initGraph();
+        }
+    }
+
+    // Initialize and draw graph
+    function initGraph() {
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            drawGraph(); // Redraw on resize
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Initial sizing
+
+        // Draw graph function
+        function drawGraph() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get current values
+            const eyeValue = parseInt(document.getElementById('eye-slider').value);
+            const hairValue = parseInt(document.getElementById('hair-slider').value);
+            const memoryValue = parseInt(document.getElementById('memory-slider').value);
+            const focusValue = parseInt(document.getElementById('focus-slider').value);
+
+            // Define data points
+            const data = [
+                { label: 'OCA2/HERC2', value: eyeValue, color: '#00c9ff' },
+                { label: 'MC1R', value: hairValue, color: '#ff6b6b' },
+                { label: 'BDNF', value: memoryValue, color: '#92fe9d' },
+                { label: 'COMT', value: focusValue, color: '#feac5e' }
+            ];
+
+            // Set graph dimensions
+            const padding = 40;
+            const graphWidth = canvas.width - (padding * 2);
+            const graphHeight = canvas.height - (padding * 2);
+            const barWidth = graphWidth / (data.length * 2);
+            const spacing = barWidth / 2;
+
+            // Draw background grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+
+            // Horizontal grid lines
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (graphHeight - (graphHeight * (i / 10)));
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + graphWidth, y);
+                ctx.stroke();
+
+                // Add percentage labels
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(i * 10 + '%', padding - 5, y + 3);
+            }
+
+            // Draw bars with animation
+            data.forEach((item, index) => {
+                const x = padding + (index * (barWidth + spacing) * 2) + spacing;
+                const barHeight = (item.value / 100) * graphHeight;
+                const y = padding + graphHeight - barHeight;
+
+                // Create gradient for bar
+                const gradient = ctx.createLinearGradient(x, y, x, padding + graphHeight);
+                gradient.addColorStop(0, item.color);
+                gradient.addColorStop(1, item.color + '40');
+
+                ctx.fillStyle = gradient;
+
+                // Bar with rounded top
+                ctx.beginPath();
+                ctx.moveTo(x, padding + graphHeight);
+                ctx.lineTo(x, y + 5);
+                ctx.arc(x + barWidth/2, y + 5, barWidth/2, Math.PI, 0, true);
+                ctx.lineTo(x + barWidth, padding + graphHeight);
+                ctx.closePath();
+                ctx.fill();
+
+                // Add glow effect
+                ctx.shadowColor = item.color;
+                ctx.shadowBlur = 10;
+                ctx.fillRect(x + barWidth/4, y + 5, barWidth/2, 2);
+                ctx.shadowBlur = 0;
+
+                // Add label
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label, x + barWidth/2, padding + graphHeight + 15);
+
+                // Add value
+                ctx.fillStyle = item.color;
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(item.value + '%', x + barWidth/2, y - 5);
+            });
+
+            // Draw title
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Gene Expression Levels', canvas.width / 2, 15);
+        }
+
+        // Update graph when sliders change
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('input', drawGraph);
+        });
+
+        // Initial draw
+        drawGraph();
+    }
+
+    // Call new feature initialization functions
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeWithAnimation();
+
+        // Add additional features with slight delay for better loading experience
+        setTimeout(() => {
+            add3DEffects();
+            addGraphVisualization();
+        }, 1500);
+    });
+// Fix for missing circuit visualization features
+function ensureCircuitElements() {
+    // Check for circuit visual container
+    if (!document.getElementById('circuit-visual')) {
+        console.log('Creating missing circuit visual container');
+        const circuitVisualContainer = document.createElement('div');
+        circuitVisualContainer.id = 'circuit-visual';
+        circuitVisualContainer.className = 'circuit-container';
+        circuitVisualContainer.style.fontFamily = 'monospace';
+        circuitVisualContainer.style.whiteSpace = 'pre';
+        circuitVisualContainer.style.fontSize = '14px';
+        circuitVisualContainer.style.padding = '15px';
+        circuitVisualContainer.style.borderRadius = '5px';
+        circuitVisualContainer.style.background = 'rgba(0, 0, 0, 0.1)';
+        circuitVisualContainer.style.overflow = 'auto';
+        circuitVisualContainer.style.marginTop = '15px';
+
+        // Add to DOM - assuming there's a card to append to
+        const targetCard = document.querySelector('.card:nth-child(2)') || document.querySelector('.card') || document.body;
+        targetCard.appendChild(circuitVisualContainer);
+    }
+
+    // Check for circuit code element
+    if (!document.getElementById('circuit-code')) {
+        console.log('Creating missing circuit code element');
+        const circuitCode = document.createElement('pre');
+        circuitCode.id = 'circuit-code';
+        circuitCode.style.margin = '0';
+        circuitCode.style.color = 'var(--primary, #00c9ff)';
+
+        // Add to circuit visual container
+        const circuitVisual = document.getElementById('circuit-visual');
+        circuitVisual.appendChild(circuitCode);
+    }
+}
+
+// Always update circuit when sliders change (removing randomness)
+function fixSliderListeners() {
+    const sliders = document.querySelectorAll('.slider');
+    sliders.forEach(slider => {
+        // Remove existing listeners that might be using random updates
+        const newSlider = slider.cloneNode(true);
+        slider.parentNode.replaceChild(newSlider, slider);
+
+        // Add consistent update listener
+        newSlider.addEventListener('input', () => {
+            const valueDisplay = document.getElementById(newSlider.id.replace('slider', 'value'));
+            if (valueDisplay) {
+                valueDisplay.textContent = newSlider.value + '%';
+                if (typeof updateSliderGradient === 'function') {
+                    updateSliderGradient(newSlider);
+                }
+
+                // Always update everything
+                if (typeof updateGeneTags === 'function') {
+                    updateGeneTags();
+                }
+                if (typeof updateCircuit === 'function') {
+                    updateCircuit();
+                }
+            }
+        });
+    });
+}
+
+// Fix missing features
+function fixMissingFeatures() {
+    ensureCircuitElements();
+    fixSliderListeners();
+
+    // Force circuit update to make sure it renders
+    setTimeout(() => {
+        if (typeof updateCircuit === 'function') {
+            updateCircuit();
+            console.log('Circuit visualization refreshed');
+        }
+    }, 500);
+}
+
+// Call this after initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Let the original initialization run first
+    setTimeout(() => {
+        fixMissingFeatures();
+    }, 1500);
+});
+
+
+</script>
